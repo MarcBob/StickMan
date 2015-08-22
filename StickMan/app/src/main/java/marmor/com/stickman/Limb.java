@@ -1,6 +1,7 @@
 package marmor.com.stickman;
 
 import android.graphics.PointF;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 public class Limb
@@ -38,7 +39,7 @@ public class Limb
         calculateEndPoint();
     }
 
-    public void setStart(PointF start)
+    public void setStart(@NonNull PointF start)
     {
         this.start = start;
         calculateEndPoint();
