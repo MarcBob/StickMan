@@ -35,11 +35,46 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     public var joints: ArrayList<Joint> = ArrayList()
 
+    public val rightEllbow: Joint
+        get() = rightUpperArm.endJoint
+
+    public val rightKnee: Joint
+        get() = rightUpperLeg.endJoint
+
+    public val leftEllbow: Joint
+        get() = leftUpperArm.endJoint
+
+    public val leftKnee: Joint
+        get() = leftUpperLeg.endJoint
+
     private var selectedJoint: Joint? = null
 
-    public fun addJoints(vararg joint: Joint)
-    {
+    public fun addJoints(vararg joint: Joint) {
         joints.addAll(joint)
+    }
+
+    public fun turnDirection(direction: Direction)
+    {
+        when(direction){
+            Direction.FRONT -> {
+                rightKnee.angleSwitcher = 1
+                rightEllbow.angleSwitcher = -1
+                leftKnee.angleSwitcher = -1
+                leftEllbow.angleSwitcher = 1
+            }
+            Direction.LEFT -> {
+                rightKnee.angleSwitcher = -1
+                rightEllbow.angleSwitcher = 1
+                leftKnee.angleSwitcher = -1
+                leftEllbow.angleSwitcher = 1
+            }
+            Direction.RIGHT -> {
+                rightKnee.angleSwitcher = 1
+                rightEllbow.angleSwitcher = -1
+                leftKnee.angleSwitcher = 1
+                leftEllbow.angleSwitcher = -1
+            }
+        }
     }
 
     public fun moveTo(x: Float, y: Float) {
@@ -134,5 +169,9 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         public val LENGTH_UPPER_LEG: Float = 60f
         public val LENGTH_LOWER_LEG: Float = 50f
         public val LENGTH_TORSO: Float = 70f
+    }
+
+    public enum class Direction {
+        LEFT, RIGHT, FRONT
     }
 }

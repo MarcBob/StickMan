@@ -11,7 +11,7 @@ public class Joint(var position: PointF, var name: String) {
     private var incomingLimbs: MutableList<Limb> = ArrayList()
     private var outgoingLimbs: MutableList<Limb> = ArrayList()
 
-    private var angleSwitcher = 1
+    public var angleSwitcher: Int = 1
 
     public fun switchAngleDirction(){
         angleSwitcher *= -1
