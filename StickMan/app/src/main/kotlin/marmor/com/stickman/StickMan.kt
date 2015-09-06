@@ -3,10 +3,15 @@ package marmor.com.stickman
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
+import android.util.Log
+import android.view.MotionEvent
 import android.view.SurfaceHolder
+import android.view.View
+import java.util.ArrayList
 import kotlin.properties.Delegates
 
-public class StickMan {
+public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
+    private val SELECTION_DISTANCE: Float = 100f
 
     private val position = PointF(0f, 0f)
 
@@ -28,37 +33,92 @@ public class StickMan {
 
     public var limbs: Array<Limb> by Delegates.notNull()
 
+    public var joints: ArrayList<Joint> = ArrayList()
+
+    private var selectedJoint: Joint? = null
+
+    public fun addJoints(vararg joint: Joint)
+    {
+        joints.addAll(joint)
+    }
+
     public fun moveTo(x: Float, y: Float) {
         val deltaX = x - position.x
         val deltaY = y - position.y
 
         createLimbArray()
 
-        for (limb in limbs) {
-            limb.start.x += deltaX
-            limb.start.y += deltaY
-            limb.end.x += deltaX
-            limb.end.y += deltaY
+        for(joint in joints){
+            joint.position.x += deltaX
+            joint.position.y += deltaY
         }
+
     }
 
-    public fun draw(surfaceHolder: SurfaceHolder) {
-        val canvas = surfaceHolder.lockCanvas()
+    override fun onTouch(v: View?, event: MotionEvent): Boolean {
+
+        val x = event.getX()
+        val y = event.getY()
+
+        when(event.getAction())
+        {
+            MotionEvent.ACTION_DOWN -> {
+                var minDistance = Float.MAX_VALUE
+                for(joint in joints){
+                    var distance = joint.distanceTo(x, y)
+                    if(distance <= SELECTION_DISTANCE && minDistance > distance){
+                        minDistance = distance
+                        selectedJoint = joint
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP -> {
+                selectedJoint = null
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                moveSelectedJointTo(x, y)
+            }
+        }
+
+        draw()
+
+        return true
+    }
+
+    private fun moveSelectedJointTo(x: Float, y: Float) {
+        selectedJoint?.pull(PointF(x, y))
+    }
+
+    public fun draw() {
+        val canvas = this.surfaceHolde.lockCanvas()
 
         val line = Paint(Paint.ANTI_ALIAS_FLAG)
-        line.setColor(Color.BLACK)
-        line.setStrokeWidth(4f)
+        line.setColor(Color.BLUE)
+        line.setStrokeWidth(4f * scaleFactor)
 
         canvas.drawColor(Color.WHITE)
         for (limb in limbs) {
             canvas.drawLine(limb.start.x, limb.start.y, limb.end.x, limb.end.y, line)
+            Log.d("StickMan", limb.start.toString() + " " + limb.end.toString())
         }
 
-        val neck = torso.start
-        val radius = 20f
+        val dot = Paint(Paint.ANTI_ALIAS_FLAG)
+        dot.setColor(Color.RED)
+
+        val selectedDot = Paint(Paint.ANTI_ALIAS_FLAG)
+        selectedDot.setColor(Color.YELLOW)
+
+        for (joint in joints){
+            canvas.drawCircle(joint.position.x, joint.position.y, 3f * scaleFactor, if(joint.equals(selectedJoint)) selectedDot else dot)
+        }
+
+        val neck = torso.end
+        val radius = HEAD_RADIUS * scaleFactor
         canvas.drawCircle(neck.x, neck.y - radius, radius, line)
 
-        surfaceHolder.unlockCanvasAndPost(canvas)
+        this.surfaceHolde.unlockCanvasAndPost(canvas)
     }
 
     private fun createLimbArray() {

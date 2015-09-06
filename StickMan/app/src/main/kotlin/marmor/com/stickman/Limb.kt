@@ -1,57 +1,71 @@
 package marmor.com.stickman
 
 import android.graphics.PointF
+import java.util.*
+import kotlin.properties.Delegates
 
-public class Limb(start: PointF, length: Float, angle: Float) {
+public class Limb(start: PointF, length: Float, angle: Float, var name: String) {
+    private val FULL_CIRCLE = -2 * Math.PI
+
     public var start: PointF
     set(value){
         $start = value
         calculateEndPoint()
     }
+
     public var end: PointF
-    public var angle: Double = 0.0
-    public var length: Float = 0f
+    private set
+
+    public  var angle: Double = 0.0
     set(value){
-        this.length = value
+        $angle = value
         calculateEndPoint()
     }
 
+    public var length: Float = 0f
+    set(value){
+        $length = value
+        calculateEndPoint()
+    }
 
+    public var startJoint: Joint by Delegates.notNull()
+    public var endJoint: Joint by Delegates.notNull()
 
     init {
-        $start = PointF(start.x, start.y)
-        this.end = PointF()
-        this.angle = degreeToRadial(angle)
-        this.length = length;
+        $start = start
+        $end = PointF()
+        $angle = degreeToRadial(angle)
+        $length = length;
 
         calculateEndPoint()
     }
 
     public fun update(start: PointF?, length: Float?, angle: Float?) {
         if (start != null) {
-            this.start = start
+            $start = start
         }
         if (length != null) {
-            this.length = length
+            $length = length
         }
         if (angle != null) {
-            this.angle = angle.toDouble()
+            $angle = angle.toDouble()
         }
         calculateEndPoint()
     }
 
-    public fun setAngle(angle: Float) {
-        this.angle = degreeToRadial(angle)
+    public fun setAngleInDegree(angle: Float) {
+        $angle = degreeToRadial(angle)
         calculateEndPoint()
     }
 
-//    public fun setLength(length: Float) {
-//        this.length = length
-//        calculateEndPoint()
-//    }
+    public fun pull(destination: PointF, limbs: MutableList<Limb>)
+    {
+        limbs.add(this)
+        startJoint.pull(destination, limbs)
+    }
 
     private fun degreeToRadial(angle: Float): Double {
-        return (angle / 360) * fullCircle + Math.PI
+        return (angle / 360) * FULL_CIRCLE + Math.PI
     }
 
 
@@ -59,10 +73,7 @@ public class Limb(start: PointF, length: Float, angle: Float) {
         val diffX = Math.sin(this.angle).toFloat() * length
         val diffY = Math.cos(this.angle).toFloat() * length
 
-        this.end = PointF(start.x + diffX, start.y + diffY)
-    }
-
-    companion object {
-        private val fullCircle = -2 * Math.PI
+        $end.x = start.x + diffX
+        $end.y = start.y + diffY
     }
 }
