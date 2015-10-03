@@ -5,18 +5,15 @@ import android.support.v4.app.Fragment
 import android.view.*
 import android.view.SurfaceHolder.Callback
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import butterknife.Bind
-import butterknife.ButterKnife
 import butterknife.OnClick
-import kotlin.properties.Delegates
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class StickManActivityFragment : Fragment() {
 //    @Bind(R.id.surface)
-    protected var surfaceView: SurfaceView by Delegates.notNull()
-    private var stickMan: StickMan by Delegates.notNull()
+    protected lateinit var surfaceView: SurfaceView
+    private lateinit var stickMan: StickMan
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.fragment_stick_man, container, false)

@@ -15,7 +15,7 @@ public class StickManActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_stick_man, menu)
+        menuInflater.inflate(R.menu.menu_stick_man, menu)
         return true
     }
 
@@ -23,7 +23,7 @@ public class StickManActivity : AppCompatActivity() {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.getItemId()
+        val id = item.itemId
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {

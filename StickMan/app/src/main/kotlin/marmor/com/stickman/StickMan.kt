@@ -7,8 +7,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.View
-import java.util.ArrayList
-import kotlin.properties.Delegates
+import java.util.*
 
 public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
     private val SELECTION_DISTANCE: Float = 100f
@@ -17,21 +16,21 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     public var scaleFactor: Float = 1f
 
-    public var leftForeArm: Limb by Delegates.notNull()
-    public var leftUpperArm: Limb by Delegates.notNull()
+    public lateinit var leftForeArm: Limb
+    public lateinit var leftUpperArm: Limb
 
-    public var rightForeArm: Limb by Delegates.notNull()
-    public var rightUpperArm: Limb by Delegates.notNull()
+    public lateinit var rightForeArm: Limb
+    public lateinit var rightUpperArm: Limb
 
-    public var torso: Limb by Delegates.notNull()
+    public lateinit var torso: Limb
 
-    public var leftUpperLeg: Limb by Delegates.notNull()
-    public var leftLowerLeg: Limb by Delegates.notNull()
+    public lateinit var leftUpperLeg: Limb
+    public lateinit var leftLowerLeg: Limb
 
-    public var rightUpperLeg: Limb by Delegates.notNull()
-    public var rightLowerLeg: Limb by Delegates.notNull()
+    public lateinit var rightUpperLeg: Limb
+    public lateinit var rightLowerLeg: Limb
 
-    public var limbs: Array<Limb> by Delegates.notNull()
+    public lateinit var limbs: Array<Limb>
 
     public var joints: ArrayList<Joint> = ArrayList()
 
@@ -50,7 +49,7 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
     private var selectedJoint: Joint? = null
 
     public fun addJoints(vararg joint: Joint) {
-        joints.addAll(joint)
+        this.joints.addAll(joint)
     }
 
     public fun turnDirection(direction: Direction)
@@ -92,14 +91,14 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     override fun onTouch(v: View?, event: MotionEvent): Boolean {
 
-        val x = event.getX()
-        val y = event.getY()
+        val x = event.x
+        val y = event.y
 
-        when(event.getAction())
+        when(event.action)
         {
             MotionEvent.ACTION_DOWN -> {
                 var minDistance = Float.MAX_VALUE
-                for(joint in joints){
+                joints.forEach { joint ->
                     var distance = joint.distanceTo(x, y)
                     if(distance <= SELECTION_DISTANCE && minDistance > distance){
                         minDistance = distance
@@ -130,8 +129,8 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         val canvas = this.surfaceHolde.lockCanvas()
 
         val line = Paint(Paint.ANTI_ALIAS_FLAG)
-        line.setColor(Color.BLUE)
-        line.setStrokeWidth(4f * scaleFactor)
+        line.color = Color.BLUE
+        line.strokeWidth = 4f * scaleFactor
 
         canvas.drawColor(Color.WHITE)
         for (limb in limbs) {
@@ -140,10 +139,10 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         }
 
         val dot = Paint(Paint.ANTI_ALIAS_FLAG)
-        dot.setColor(Color.RED)
+        dot.color = Color.RED
 
         val selectedDot = Paint(Paint.ANTI_ALIAS_FLAG)
-        selectedDot.setColor(Color.YELLOW)
+        selectedDot.color = Color.YELLOW
 
         for (joint in joints){
             canvas.drawCircle(joint.position.x, joint.position.y, 3f * scaleFactor, if(joint.equals(selectedJoint)) selectedDot else dot)

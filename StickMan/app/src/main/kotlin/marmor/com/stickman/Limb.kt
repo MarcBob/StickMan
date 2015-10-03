@@ -1,60 +1,66 @@
 package marmor.com.stickman
 
 import android.graphics.PointF
-import java.util.*
 import kotlin.properties.Delegates
 
 public class Limb(start: PointF, length: Float, angle: Float, var name: String) {
     private val FULL_CIRCLE = -2 * Math.PI
 
+    private lateinit var _start: PointF
     public var start: PointF
-    set(value){
-        $start = value
-        calculateEndPoint()
-    }
+        get() = _start
+        set(value){
+            _start = value
+            calculateEndPoint()
+        }
 
-    public var end: PointF
-    private set
+    private lateinit var _end: PointF
+    public val end: PointF
+        get() = _end
 
-    public  var angle: Double = 0.0
-    set(value){
-        $angle = value
-        calculateEndPoint()
-    }
+    private var _angle: Double = 0.0
+    public  var angle: Double
+        set(value){
+            _angle = value
+            calculateEndPoint()
+        }
+        get() = _angle
 
-    public var length: Float = 0f
-    set(value){
-        $length = value
-        calculateEndPoint()
-    }
+    private var _length: Float = 0f
+    public var length: Float
+        set(value){
+            _length = value
+            calculateEndPoint()
+        }
+        get() = _length
 
     public var startJoint: Joint by Delegates.notNull()
     public var endJoint: Joint by Delegates.notNull()
 
     init {
-        $start = start
-        $end = PointF()
-        $angle = degreeToRadial(angle)
-        $length = length;
+        _start = start
+        _end = PointF()
+        _angle = degreeToRadial(angle)
+        _length = length;
 
         calculateEndPoint()
     }
 
     public fun update(start: PointF?, length: Float?, angle: Float?) {
         if (start != null) {
-            $start = start
+            _start = start
         }
         if (length != null) {
-            $length = length
+            _length = length
         }
         if (angle != null) {
-            $angle = angle.toDouble()
+            _angle = angle.toDouble()
         }
         calculateEndPoint()
     }
 
     public fun setAngleInDegree(angle: Float) {
-        $angle = degreeToRadial(angle)
+        _angle = degreeToRadial(angle)
         calculateEndPoint()
     }
 
@@ -73,7 +79,7 @@ public class Limb(start: PointF, length: Float, angle: Float, var name: String) 
         val diffX = Math.sin(this.angle).toFloat() * length
         val diffY = Math.cos(this.angle).toFloat() * length
 
-        $end.x = start.x + diffX
-        $end.y = start.y + diffY
+        _end.x = start.x + diffX
+        _end.y = start.y + diffY
     }
 }
