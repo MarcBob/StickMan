@@ -40,30 +40,45 @@ public class Joint(var position: PointF, var name: String) {
                 val secondLimb = incomingLimbs.get(0)
                 reachDestination(destination, firstLimb, secondLimb)
             }
+            else{
+                reachDestination(destination, firstLimb);
+            }
 
 
         }
     }
 
-    private fun reachDestination(destination: PointF, firstLimb: Limb, secondLimb: Limb) {
+    private fun reachDestination(destination: PointF, limb: Limb){
+        val angle = (Math.PI / 2) - Math.atan2((destination.y - position.y).toDouble(), (destination.x - position.x).toDouble())
+        propagateAngleToOutgoingLimbs(angle, limb)
+        limb.angle = angle
+    }
+
+
+    private fun reachDestination(destination: PointF, firsIncomingtLimb: Limb, secondIncomingLimb: Limb) {
         Log.d("Destination", "destination: " + destination.toString())
 
-        var a = firstLimb.length
-        var b = secondLimb.length
-        var c = secondLimb.startJoint.distanceTo(destination.x, destination.y)
+        var a = firsIncomingtLimb.length.toDouble()
+        var b = secondIncomingLimb.length.toDouble()
+        var c = secondIncomingLimb.startJoint.distanceTo(destination.x.toDouble(), destination.y.toDouble())
 
         if(c > a + b)
         {
             c = a + b
         }
 
-        val angleCB = angleSwitcher * Math.acos((((b * b) + (c * c) - (a * a)) / (2 * b * c)).toDouble())
-        val angleAB = angleSwitcher * Math.acos((((b * b) + (a * a) - (c * c)) / (2 * b * a)).toDouble())
+        Log.d("Joint: ", "CB: " + (((b * b) + (c * c) - (a * a)) / (2 * b * c)))
+        Log.d("Joint: ", "AB: " + (((b * b) + (a * a) - (c * c)) / (2 * b * a)))
+        val angleCB = angleSwitcher * Math.acos(Math.min(1.0,(((b * b) + (c * c) - (a * a)) / (2 * b * c))))
+        val angleAB = angleSwitcher * Math.acos(Math.min(1.0,(((b * b) + (a * a) - (c * c)) / (2 * b * a))))
         val angleAC = angleSwitcher * Math.PI - angleAB - angleCB
 
 
-        val deltaX = destination.x - secondLimb.startJoint.position.x
-        val deltaY = destination.y - secondLimb.startJoint.position.y
+        val deltaX = destination.x - secondIncomingLimb.startJoint.position.x
+        val deltaY = destination.y - secondIncomingLimb.startJoint.position.y
+
+        Log.d("Destination", "deltaX: " + deltaX)
+        Log.d("Destination", "deltaY: " + deltaY)
 
         val z = (Math.PI / 2) - Math.atan2(deltaY.toDouble(), deltaX.toDouble())
 
@@ -72,13 +87,29 @@ public class Joint(var position: PointF, var name: String) {
 
         val angleACFinal = y
 
-        secondLimb.angle = angleCBFinal
-        firstLimb.angle = angleACFinal
+        propagateAngleToOutgoingLimbs(angleACFinal, firsIncomingtLimb)
+        propagateAngleToOutgoingLimbs(angleCBFinal, secondIncomingLimb, firsIncomingtLimb)
+
+        firsIncomingtLimb.angle = angleACFinal
+        secondIncomingLimb.angle = angleCBFinal
     }
 
-    public fun distanceTo(x: Float, y: Float): Float {
+    private fun propagateAngleToOutgoingLimbs(angle: Double, limb: Limb, exceptionLimb: Limb? = null) {
+        val angleDiff = limb.angle - angle
+
+        for (limb: Limb in limb.endJoint.outgoingLimbs) {
+            if(limb != exceptionLimb) {
+                limb.angle -= angleDiff
+                for (nextLimb: Limb in limb.endJoint.outgoingLimbs) {
+                    nextLimb.angle -= angleDiff
+                }
+            }
+        }
+    }
+
+    public fun distanceTo(x: Double, y: Double): Double {
         var deltaX = this.position.x - x
         var deltaY = this.position.y - y
-        return Math.sqrt(Math.pow(deltaX.toDouble(), 2.0) + Math.pow(deltaY.toDouble(), 2.0)).toFloat()
+        return Math.sqrt(Math.pow(deltaX, 2.0) + Math.pow(deltaY, 2.0))
     }
 }

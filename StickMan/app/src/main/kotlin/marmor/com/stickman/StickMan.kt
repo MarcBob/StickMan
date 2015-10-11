@@ -97,9 +97,9 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         when(event.action)
         {
             MotionEvent.ACTION_DOWN -> {
-                var minDistance = Float.MAX_VALUE
+                var minDistance = Double.MAX_VALUE
                 joints.forEach { joint ->
-                    var distance = joint.distanceTo(x, y)
+                    var distance = joint.distanceTo(x.toDouble(), y.toDouble())
                     if(distance <= SELECTION_DISTANCE && minDistance > distance){
                         minDistance = distance
                         selectedJoint = joint

@@ -1,6 +1,7 @@
 package marmor.com.stickman
 
 import android.graphics.PointF
+import android.util.Log
 import kotlin.properties.Delegates
 
 public class Limb(start: PointF, length: Float, angle: Float, var name: String) {
@@ -76,6 +77,8 @@ public class Limb(start: PointF, length: Float, angle: Float, var name: String) 
 
 
     private fun calculateEndPoint() {
+        Log.d("Limb calcEndPoint: ", "angle: " + angle)
+
         val diffX = Math.sin(this.angle).toFloat() * length
         val diffY = Math.cos(this.angle).toFloat() * length
 
