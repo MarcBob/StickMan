@@ -26,7 +26,7 @@ public class StickManActivityFragment : Fragment() {
         surfaceView = view?.findViewById(R.id.surface) as SurfaceView
         view?.findViewById(R.id.left_button)?.setOnClickListener {turnLeft()}
         view?.findViewById(R.id.right_button)?.setOnClickListener {turnRight()}
-        view?.findViewById(R.id.front_button)?.setOnClickListener {turnFront()}
+        view?.findViewById(R.id.front_button)?.setOnClickListener {playRecordings()}
     }
 
 
@@ -78,4 +78,8 @@ public class StickManActivityFragment : Fragment() {
         stickMan.turnDirection(StickMan.Direction.RIGHT)
     }
 
+    @OnClick(R.id.right_button)
+    private fun playRecordings() {
+        stickMan.playRecordings()
+    }
 }

@@ -5,7 +5,7 @@ import android.util.Log
 
 import java.util.ArrayList
 
-public class Joint(var position: PointF, var name: String) {
+public class Joint(var position: PointF, var name: String, var canPropagate: Boolean) {
     private val MOVEMENT_DEPTH = 2
 
     private var incomingLimbs: MutableList<Limb> = ArrayList()
@@ -13,7 +13,7 @@ public class Joint(var position: PointF, var name: String) {
 
     public var angleSwitcher: Int = 1
 
-    public fun switchAngleDirction(){
+    public fun switchAngleDirection(){
         angleSwitcher *= -1
     }
 
@@ -34,17 +34,14 @@ public class Joint(var position: PointF, var name: String) {
             }
         }
         else{
-            //FIXME this should work for more then 2 later
-            val firstLimb = limbs.get(0)
-            if(incomingLimbs.size() > 0) {
-                val secondLimb = incomingLimbs.get(0)
+            //FIXME this should work for more than 2 later
+            val firstLimb = limbs[0]
+            if(canPropagate && incomingLimbs.size > 0) {
+                val secondLimb = incomingLimbs[0]
                 reachDestination(destination, firstLimb, secondLimb)
             }
-            else{
+            else
                 reachDestination(destination, firstLimb);
-            }
-
-
         }
     }
 
@@ -54,31 +51,22 @@ public class Joint(var position: PointF, var name: String) {
         limb.angle = angle
     }
 
-
-    private fun reachDestination(destination: PointF, firsIncomingtLimb: Limb, secondIncomingLimb: Limb) {
+    private fun reachDestination(destination: PointF, incomingLimb: Limb, predecessorLimb: Limb) {
         Log.d("Destination", "destination: " + destination.toString())
 
-        var a = firsIncomingtLimb.length.toDouble()
-        var b = secondIncomingLimb.length.toDouble()
-        var c = secondIncomingLimb.startJoint.distanceTo(destination.x.toDouble(), destination.y.toDouble())
+        var limbLength = incomingLimb.length.toDouble()
+        var predLimbLength = predecessorLimb.length.toDouble()
+        var distance = predecessorLimb.startJoint.distanceTo(destination.x.toDouble(), destination.y.toDouble())
 
-        if(c > a + b)
-        {
-            c = a + b
-        }
+        if(distance > limbLength + predLimbLength)
+            distance = limbLength + predLimbLength
 
-        Log.d("Joint: ", "CB: " + (((b * b) + (c * c) - (a * a)) / (2 * b * c)))
-        Log.d("Joint: ", "AB: " + (((b * b) + (a * a) - (c * c)) / (2 * b * a)))
-        val angleCB = angleSwitcher * Math.acos(Math.min(1.0,(((b * b) + (c * c) - (a * a)) / (2 * b * c))))
-        val angleAB = angleSwitcher * Math.acos(Math.min(1.0,(((b * b) + (a * a) - (c * c)) / (2 * b * a))))
+        val angleCB = angleSwitcher * Math.acos(Math.min(1.0,(((predLimbLength * predLimbLength) + (distance * distance) - (limbLength * limbLength)) / (2 * predLimbLength * distance))))
+        val angleAB = angleSwitcher * Math.acos(Math.min(1.0,(((predLimbLength * predLimbLength) + (limbLength * limbLength) - (distance * distance)) / (2 * predLimbLength * limbLength))))
         val angleAC = angleSwitcher * Math.PI - angleAB - angleCB
 
-
-        val deltaX = destination.x - secondIncomingLimb.startJoint.position.x
-        val deltaY = destination.y - secondIncomingLimb.startJoint.position.y
-
-        Log.d("Destination", "deltaX: " + deltaX)
-        Log.d("Destination", "deltaY: " + deltaY)
+        val deltaX = destination.x - predecessorLimb.startJoint.position.x
+        val deltaY = destination.y - predecessorLimb.startJoint.position.y
 
         val z = (Math.PI / 2) - Math.atan2(deltaY.toDouble(), deltaX.toDouble())
 
@@ -87,11 +75,11 @@ public class Joint(var position: PointF, var name: String) {
 
         val angleACFinal = y
 
-        propagateAngleToOutgoingLimbs(angleACFinal, firsIncomingtLimb)
-        propagateAngleToOutgoingLimbs(angleCBFinal, secondIncomingLimb, firsIncomingtLimb)
+        propagateAngleToOutgoingLimbs(angleACFinal, incomingLimb)
+        propagateAngleToOutgoingLimbs(angleCBFinal, predecessorLimb, incomingLimb)
 
-        firsIncomingtLimb.angle = angleACFinal
-        secondIncomingLimb.angle = angleCBFinal
+        incomingLimb.angle = angleACFinal
+        predecessorLimb.angle = angleCBFinal
     }
 
     private fun propagateAngleToOutgoingLimbs(angle: Double, limb: Limb, exceptionLimb: Limb? = null) {

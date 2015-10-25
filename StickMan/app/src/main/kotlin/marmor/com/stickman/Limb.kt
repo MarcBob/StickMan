@@ -1,11 +1,15 @@
 package marmor.com.stickman
 
 import android.graphics.PointF
+import android.os.Debug
 import android.util.Log
+import java.util.*
 import kotlin.properties.Delegates
 
 public class Limb(start: PointF, length: Float, angle: Float, var name: String) {
     private val FULL_CIRCLE = -2 * Math.PI
+
+    public val recordedAngles: LinkedList<RecordedAngle> = LinkedList()
 
     private lateinit var _start: PointF
     public var start: PointF
@@ -22,6 +26,7 @@ public class Limb(start: PointF, length: Float, angle: Float, var name: String) 
     private var _angle: Double = 0.0
     public  var angle: Double
         set(value){
+            recordAngles(value)
             _angle = value
             calculateEndPoint()
         }
@@ -60,6 +65,12 @@ public class Limb(start: PointF, length: Float, angle: Float, var name: String) 
         calculateEndPoint()
     }
 
+    private fun recordAngles(newAngle: Double) {
+        var difference = newAngle - _angle
+        recordedAngles.add(RecordedAngle(difference, System.currentTimeMillis()))
+        Log.d("lalaland", "# Angles: " + recordedAngles.size + "   Timestamp: " + System.currentTimeMillis())
+    }
+
     public fun setAngleInDegree(angle: Float) {
         _angle = degreeToRadial(angle)
         calculateEndPoint()
@@ -74,7 +85,6 @@ public class Limb(start: PointF, length: Float, angle: Float, var name: String) 
     private fun degreeToRadial(angle: Float): Double {
         return (angle / 360) * FULL_CIRCLE + Math.PI
     }
-
 
     private fun calculateEndPoint() {
         Log.d("Limb calcEndPoint: ", "angle: " + angle)

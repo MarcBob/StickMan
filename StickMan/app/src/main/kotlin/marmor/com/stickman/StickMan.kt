@@ -9,7 +9,7 @@ import android.view.SurfaceHolder
 import android.view.View
 import java.util.*
 
-public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
+public class StickMan(var surfaceHolder: SurfaceHolder) : View.OnTouchListener {
     private val SELECTION_DISTANCE: Float = 100f
 
     private val position = PointF(0f, 0f)
@@ -24,6 +24,8 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     public lateinit var torso: Limb
 
+    public lateinit var head: Limb
+
     public lateinit var leftUpperLeg: Limb
     public lateinit var leftLowerLeg: Limb
 
@@ -34,13 +36,13 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     public var joints: ArrayList<Joint> = ArrayList()
 
-    public val rightEllbow: Joint
+    public val rightElbow: Joint
         get() = rightUpperArm.endJoint
 
     public val rightKnee: Joint
         get() = rightUpperLeg.endJoint
 
-    public val leftEllbow: Joint
+    public val leftElbow: Joint
         get() = leftUpperArm.endJoint
 
     public val leftKnee: Joint
@@ -48,8 +50,9 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     private var selectedJoint: Joint? = null
 
-    public fun addJoints(vararg joint: Joint) {
-        this.joints.addAll(joint)
+    public fun addJoints(vararg joints: Joint) {
+        for (newJoint in joints)
+            this.joints.add(newJoint)
     }
 
     public fun turnDirection(direction: Direction)
@@ -57,21 +60,21 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         when(direction){
             Direction.FRONT -> {
                 rightKnee.angleSwitcher = 1
-                rightEllbow.angleSwitcher = -1
+                rightElbow.angleSwitcher = -1
                 leftKnee.angleSwitcher = -1
-                leftEllbow.angleSwitcher = 1
+                leftElbow.angleSwitcher = 1
             }
             Direction.LEFT -> {
                 rightKnee.angleSwitcher = -1
-                rightEllbow.angleSwitcher = 1
+                rightElbow.angleSwitcher = 1
                 leftKnee.angleSwitcher = -1
-                leftEllbow.angleSwitcher = 1
+                leftElbow.angleSwitcher = 1
             }
             Direction.RIGHT -> {
                 rightKnee.angleSwitcher = 1
-                rightEllbow.angleSwitcher = -1
+                rightElbow.angleSwitcher = -1
                 leftKnee.angleSwitcher = 1
-                leftEllbow.angleSwitcher = -1
+                leftElbow.angleSwitcher = -1
             }
         }
     }
@@ -86,11 +89,9 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
             joint.position.x += deltaX
             joint.position.y += deltaY
         }
-
     }
 
     override fun onTouch(v: View?, event: MotionEvent): Boolean {
-
         val x = event.x
         val y = event.y
 
@@ -98,7 +99,7 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         {
             MotionEvent.ACTION_DOWN -> {
                 var minDistance = Double.MAX_VALUE
-                joints.forEach { joint ->
+                for (joint in joints) {
                     var distance = joint.distanceTo(x.toDouble(), y.toDouble())
                     if(distance <= SELECTION_DISTANCE && minDistance > distance){
                         minDistance = distance
@@ -126,7 +127,7 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
     }
 
     public fun draw() {
-        val canvas = this.surfaceHolde.lockCanvas()
+        val canvas = this.surfaceHolder.lockCanvas()
 
         val line = Paint(Paint.ANTI_ALIAS_FLAG)
         line.color = Color.BLUE
@@ -149,14 +150,18 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
         }
 
         val neck = torso.end
+        val forehead = head.end
         val radius = HEAD_RADIUS * scaleFactor
-        canvas.drawCircle(neck.x, neck.y - radius, radius, line)
+        val posHeadX = neck.x + (forehead.x - neck.x) / 2;
+        val posHeadY = neck.y + (forehead.y - neck.y) / 2;
 
-        this.surfaceHolde.unlockCanvasAndPost(canvas)
+        canvas.drawCircle(posHeadX, posHeadY, radius, line)
+
+        this.surfaceHolder.unlockCanvasAndPost(canvas)
     }
 
     private fun createLimbArray() {
-        val newLimbs = arrayOf(leftForeArm, leftUpperArm, leftUpperLeg, leftLowerLeg, torso, rightForeArm, rightUpperArm, rightUpperLeg, rightLowerLeg)
+        val newLimbs = arrayOf(torso, head, leftUpperArm, leftForeArm, leftUpperLeg, leftLowerLeg, rightUpperArm, rightForeArm, rightUpperLeg, rightLowerLeg)
 
         limbs = newLimbs
     }
@@ -172,5 +177,31 @@ public class StickMan(var surfaceHolde: SurfaceHolder) : View.OnTouchListener {
 
     public enum class Direction {
         LEFT, RIGHT, FRONT
+    }
+
+    public fun playRecordings() {
+        var player = Thread(Runnable() {
+            run {
+                var angles: LinkedList<RecordedAngle> = LinkedList()
+                var angles2: LinkedList<RecordedAngle> = LinkedList()
+                angles.addAll(rightUpperArm.recordedAngles)
+                angles2.addAll(rightForeArm.recordedAngles)
+                var time: Long
+                var waitTime: Long = 16
+                for (i: Int in 0..angles.size-1) {
+                    time = System.currentTimeMillis() + waitTime
+                    rightUpperArm.angle += angles[i].angle
+                    rightForeArm.angle += angles2[i].angle
+                    draw()
+                    time = time - System.currentTimeMillis()
+                    if (time < 0)
+                        time = 0;
+                    Thread.sleep(time);
+                }
+                rightUpperArm.recordedAngles.clear()
+                rightForeArm.recordedAngles.clear()
+            }
+        })
+        player.start()
     }
 }
