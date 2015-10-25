@@ -34,10 +34,10 @@ public class StickManActivityFragment : Fragment() {
         super.onResume()
 
 
-        surfaceView?.getViewTreeObserver()?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+        surfaceView.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
             override fun onGlobalLayout() {
 
-                var surfaceHolder = surfaceView?.getHolder()
+                var surfaceHolder = surfaceView.holder
 
                 surfaceHolder?.addCallback(object : Callback {
                     override fun surfaceCreated(holder: SurfaceHolder) {
@@ -45,7 +45,7 @@ public class StickManActivityFragment : Fragment() {
 
                         stickMan = StickManFactory.createStickMan(5f, surfaceHolder)
 
-                        stickMan.moveTo(surfaceView.getWidth()/2.0f, surfaceView.getHeight()/2.0f)
+                        stickMan.moveTo(surfaceView.width /2.0f, surfaceView.height /2.0f)
 
                         if(surfaceHolder != null)
                             stickMan.draw()
