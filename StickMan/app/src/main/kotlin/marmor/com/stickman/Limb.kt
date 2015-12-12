@@ -1,10 +1,9 @@
 package marmor.com.stickman
 
 import android.graphics.PointF
-import android.os.Debug
 import android.util.Log
+
 import java.util.*
-import kotlin.properties.Delegates
 
 public class Limb(start: PointF, length: Float, angle: Float, var name: String) {
     private val FULL_CIRCLE = -2 * Math.PI
@@ -40,8 +39,8 @@ public class Limb(start: PointF, length: Float, angle: Float, var name: String) 
         }
         get() = _length
 
-    public var startJoint: Joint by Delegates.notNull()
-    public var endJoint: Joint by Delegates.notNull()
+    public lateinit var startJoint: Joint
+    public lateinit var endJoint: Joint
 
     init {
         _start = start
